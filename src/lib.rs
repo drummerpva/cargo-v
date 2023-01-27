@@ -55,7 +55,21 @@ mod test {
     use super::*;
 
     #[test]
-    fn should_update_project_version() {
+    fn should_get_version() {
+        let input = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.1\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
+        let version = get_version(&input);
+        assert_eq!(version, String::from("0.0.1"));
+    }
+    #[test]
+    fn should_get_version_tuple() {
+        let input = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.1\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
+        let version_string = get_version(&input);
+        let version = get_version_as_tuple(&version_string);
+        assert_eq!(version, ("0", "0", "1"));
+    }
+
+    #[test]
+    fn should_update_project_version_by_hand() {
         let input = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.1\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
         let expected = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.2\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
 
