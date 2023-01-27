@@ -1,3 +1,11 @@
+use std::{env, fs};
+
 fn main() {
-    println!("Hello, world!");
+    let args: Vec<String> = env::args().collect();
+    dbg!(args);
+    let file = fs::read_to_string("./Cargo.toml");
+    match file {
+        Ok(data) => println!("{data}"),
+        Err(err) => println!("{err}"),
+    }
 }
