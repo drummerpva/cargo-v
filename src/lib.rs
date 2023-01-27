@@ -13,12 +13,12 @@ pub fn update_version_by_label(cargo_toml_content: String, version: VersionLabel
         cargo_toml_content,
         match version {
             VersionLabel::Patch => {
-                format!("{major}.{minor}.{}", patch.parse::<usize>().unwrap() + 1)
+                format!("{major}.{minor}.{}", increment_version(patch))
             }
             VersionLabel::Minor => {
-                format!("{major}.{}.{}", minor.parse::<usize>().unwrap() + 1, 0)
+                format!("{major}.{}.{}", increment_version(minor), 0)
             }
-            VersionLabel::Major => format!("{}.{}.{}", major.parse::<usize>().unwrap() + 1, 0, 0),
+            VersionLabel::Major => format!("{}.{}.{}", increment_version(major), 0, 0),
         },
     )
 }
@@ -47,7 +47,9 @@ fn get_version_as_tuple(version: &str) -> (&str, &str, &str) {
     let vec: Vec<&str> = version.split('.').collect();
     (vec[0], vec[1], vec[2])
 }
-
+fn increment_version(single_version: &str) -> usize {
+    single_version.parse::<usize>().unwrap() + 1
+}
 #[cfg(test)]
 mod test {
     use super::*;
