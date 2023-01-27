@@ -12,14 +12,11 @@ pub fn update_version_by_label(cargo_toml_content: String, version: VersionLabel
     update_version(
         cargo_toml_content,
         match version {
-            VersionLabel::Patch => format!(
-                "{}.{}.{}",
-                major,
-                minor,
-                patch.parse::<usize>().unwrap() + 1
-            ),
+            VersionLabel::Patch => {
+                format!("{major}.{minor}.{}", patch.parse::<usize>().unwrap() + 1)
+            }
             VersionLabel::Minor => {
-                format!("{}.{}.{}", major, minor.parse::<usize>().unwrap() + 1, 0)
+                format!("{major}.{}.{}", minor.parse::<usize>().unwrap() + 1, 0)
             }
             VersionLabel::Major => format!("{}.{}.{}", major.parse::<usize>().unwrap() + 1, 0, 0),
         },
