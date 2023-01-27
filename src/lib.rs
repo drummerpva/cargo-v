@@ -8,9 +8,9 @@ pub enum VersionLabel {
 
 pub fn update_version_by_label(cargo_toml_content: String, version: VersionLabel) -> String {
     let old_version = get_version(&cargo_toml_content);
+    let (major, minor, patch) = get_version_as_tuple(&old_version);
     match version {
         VersionLabel::Patch => {
-            let (major, minor, patch) = get_version_as_tuple(&old_version);
             return update_version(
                 cargo_toml_content,
                 format!(
@@ -22,14 +22,12 @@ pub fn update_version_by_label(cargo_toml_content: String, version: VersionLabel
             );
         }
         VersionLabel::Minor => {
-            let (major, minor, _) = get_version_as_tuple(&old_version);
             return update_version(
                 cargo_toml_content,
                 format!("{}.{}.{}", major, minor.parse::<usize>().unwrap() + 1, 0),
             );
         }
         VersionLabel::Major => {
-            let (major, _, _) = get_version_as_tuple(&old_version);
             return update_version(
                 cargo_toml_content,
                 format!("{}.{}.{}", major.parse::<usize>().unwrap() + 1, 0, 0),
