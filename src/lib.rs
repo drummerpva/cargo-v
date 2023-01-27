@@ -16,9 +16,9 @@ pub fn update_version_by_label(cargo_toml_content: String, version: VersionLabel
                 format!("{major}.{minor}.{}", increment_version(patch))
             }
             VersionLabel::Minor => {
-                format!("{major}.{}.{}", increment_version(minor), 0)
+                format!("{major}.{}.0", increment_version(minor))
             }
-            VersionLabel::Major => format!("{}.{}.{}", increment_version(major), 0, 0),
+            VersionLabel::Major => format!("{}.0.0", increment_version(major)),
         },
     )
 }
