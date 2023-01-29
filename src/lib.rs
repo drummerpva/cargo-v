@@ -27,7 +27,7 @@ pub fn update_version_by_label(
 }
 
 pub fn update_version(cargo_toml_content: String, version: String) -> (String, String) {
-    let version = version.replace("v", "");
+    let version = version.replace('v', "");
     let old_version = get_version(&cargo_toml_content);
     verify_new_version_is_grather(&old_version, &version);
     (cargo_toml_content.replace(&old_version, &version), version)
