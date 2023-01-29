@@ -8,7 +8,6 @@ use std::{
 fn main() {
     let mut args = env::args();
     args.next();
-    dbg!(&args);
     let version = args.next().expect("You must pass the version");
 
     let file = fs::read_to_string("./Cargo.toml");
@@ -25,8 +24,12 @@ fn main() {
     };
     if save_new_version_in_cargo_toml(new_file_content).is_err() {
         println!("Erro on Save new content att Cargo.toml");
+        process::exit(1);
     }
-    run_build();
+    if let Err(err) = run_build() {
+        println!("Erro no build: {}", err);
+        process::exit(1);
+    }
     git_add();
     git_commit(&new_version);
     git_tag(&new_version);
@@ -36,24 +39,27 @@ fn save_new_version_in_cargo_toml(new_file_content: String) -> Result<(), Box<dy
     fs::write("./Cargo.toml", new_file_content)?;
     Ok(())
 }
-fn run_build() {
-    let _ = Command::new("cargo").args(["build", "--release"]).spawn();
+fn run_build() -> Result<(), Box<dyn Error>> {
+    let _ = Command::new("cargo")
+        .args(["build", "--release"])
+        .output()?;
+    Ok(())
 }
 
 fn git_add() {
     let _ = Command::new("git")
         .args(["add", "Cargo.toml", "Cargo.lock"])
-        .spawn();
+        .output();
 }
 
 fn git_commit(version: &str) {
     let version = &format!("'v{version}'");
-    let _ = Command::new("git").args(["commit", "-m", version]).spawn();
+    let _ = Command::new("git").args(["commit", "-m", version]).output();
 }
 fn git_tag(version: &str) {
     let version = &format!("v{version}");
     let commit_message = &format!("'v{version}'");
     let _ = Command::new("git")
         .args(["tag", "-a", version, "-m", commit_message])
-        .spawn();
+        .output();
 }
