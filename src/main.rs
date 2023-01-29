@@ -1,9 +1,13 @@
 use cargo_v::{update_version, update_version_by_label, VersionLabel};
-use std::{env, error::Error, fs, process::Command};
+use std::{
+    env,
+    error::Error,
+    fs,
+    process::{self, Command},
+};
 fn main() {
     let mut args = env::args();
     args.next();
-    dbg!(&args);
     let version = args.next().expect("You must pass the version");
 
     let file = fs::read_to_string("./Cargo.toml");
@@ -21,22 +25,23 @@ fn main() {
     if save_new_version_in_cargo_toml(new_file_content).is_err() {
         println!("Erro on Save new content att Cargo.toml");
     }
-    run_build();
+    // run_build();
     git_add();
     git_commit(&new_version);
     git_tag(&new_version);
+    process::exit(0);
 }
 fn save_new_version_in_cargo_toml(new_file_content: String) -> Result<(), Box<dyn Error>> {
     fs::write("./Cargo.toml", new_file_content)?;
     Ok(())
 }
-fn run_build() {
+fn _run_build() {
     let _ = Command::new("cargo").args(["build"]).spawn();
 }
 
 fn git_add() {
     let _ = Command::new("git")
-        .args(["add", "Corgo.toml", "Cargo.lock"])
+        .args(["add", "Cargo.toml", "Cargo.lock"])
         .spawn();
 }
 
