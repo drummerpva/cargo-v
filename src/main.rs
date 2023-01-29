@@ -8,6 +8,7 @@ use std::{
 fn main() {
     let mut args = env::args();
     args.next();
+    dbg!(&args);
     let version = args.next().expect("You must pass the version");
 
     let file = fs::read_to_string("./Cargo.toml");
@@ -25,7 +26,7 @@ fn main() {
     if save_new_version_in_cargo_toml(new_file_content).is_err() {
         println!("Erro on Save new content att Cargo.toml");
     }
-    // run_build();
+    run_build();
     git_add();
     git_commit(&new_version);
     git_tag(&new_version);
@@ -35,8 +36,8 @@ fn save_new_version_in_cargo_toml(new_file_content: String) -> Result<(), Box<dy
     fs::write("./Cargo.toml", new_file_content)?;
     Ok(())
 }
-fn _run_build() {
-    let _ = Command::new("cargo").args(["build"]).spawn();
+fn run_build() {
+    let _ = Command::new("cargo").args(["build", "--release"]).spawn();
 }
 
 fn git_add() {
