@@ -21,6 +21,7 @@ fn main() {
     if save_new_version_in_cargo_toml(new_file_content).is_err() {
         println!("Erro on Save new content att Cargo.toml");
     }
+    run_build();
     git_add();
     git_commit(&new_version);
     git_tag(&new_version);
@@ -29,18 +30,24 @@ fn save_new_version_in_cargo_toml(new_file_content: String) -> Result<(), Box<dy
     fs::write("./Cargo.toml", new_file_content)?;
     Ok(())
 }
+fn run_build() {
+    let _ = Command::new("cargo").args(["build"]).spawn();
+}
 
 fn git_add() {
-    let _ = Command::new("echo").arg("git add .").spawn();
+    let _ = Command::new("git")
+        .args(["add", "Corgo.toml", "Cargo.lock"])
+        .spawn();
 }
 
 fn git_commit(version: &str) {
-    let _ = Command::new("echo")
-        .arg(format!("git commit -m 'v{version}'"))
-        .spawn();
+    let version = &format!("'v{version}'");
+    let _ = Command::new("git").args(["commit", "-m", version]).spawn();
 }
 fn git_tag(version: &str) {
-    let _ = Command::new("echo")
-        .arg(format!("git tag -a v{version} -m 'v{version}'"))
+    let version = &format!("v{version}");
+    let commit_message = &format!("'v{version}'");
+    let _ = Command::new("git")
+        .args(["tag", "-a", version, "-m", commit_message])
         .spawn();
 }
