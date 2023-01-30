@@ -8,6 +8,7 @@ use std::{
 fn main() {
     let mut args = env::args();
     args.next();
+    args.next();
     let version = args.next().expect("You must pass the version");
 
     let file = fs::read_to_string("./Cargo.toml");
