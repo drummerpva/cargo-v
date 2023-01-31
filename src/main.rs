@@ -7,8 +7,10 @@ use std::{
 };
 fn main() {
     let mut args = env::args().skip(2);
-    let version = args.next().expect("You must pass the version");
-
+    let version = match args.next() {
+        Some(v) => v,
+        None => handle_error(String::from("You must pass the version")),
+    };
     let file = fs::read_to_string("./Cargo.toml");
     let file_content = match file {
         Ok(data) => data,
