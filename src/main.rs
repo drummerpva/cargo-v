@@ -2,14 +2,14 @@ use cargo_v::{update_version, update_version_by_label, VersionLabel};
 use std::{
     env,
     error::Error,
-    fs,
+    fs, io,
     process::{self, Command},
 };
 fn main() {
     let mut args = env::args().skip(2);
     let version = match args.next() {
         Some(v) => v,
-        None => handle_error(String::from("You must pass the version")),
+        None => handle_error(String::from("Version not provided! You must pass the version(patch, minor, major or specific version v1.0.0 by Example)")),
     };
     let file = fs::read_to_string("./Cargo.toml");
     let file_content = match file {
@@ -37,17 +37,21 @@ fn main() {
             handle_error(error.to_string());
         }),
     };
-    if save_new_version_in_cargo_toml(new_file_content).is_err() {
-        println!("Erro on Save new content att Cargo.toml");
-        process::exit(1);
+    if let Err(error) = save_new_version_in_cargo_toml(new_file_content) {
+        handle_error(format!("Erro on Save new content at Cargo.toml: {error}"));
     }
-    if let Err(err) = run_build() {
-        println!("Erro no build: {}", err);
-        process::exit(1);
+    if let Err(error) = run_build() {
+        handle_error(format!("Error on build: {}", error));
     }
-    git_add();
-    git_commit(&new_version);
-    git_tag(&new_version);
+    if let Err(error) = git_add() {
+        handle_error(format!("Error at git_add: {error}"));
+    }
+    if let Err(error) = git_commit(&new_version) {
+        handle_error(format!("Error at git_commit: {error}"));
+    }
+    if let Err(error) = git_tag(&new_version) {
+        handle_error(format!("Error at git_tag: {error}"));
+    }
     process::exit(0);
 }
 
@@ -55,7 +59,7 @@ fn handle_error(error: String) -> ! {
     eprintln!("ERROR: {error}");
     process::exit(1);
 }
-fn save_new_version_in_cargo_toml(new_file_content: String) -> Result<(), Box<dyn Error>> {
+fn save_new_version_in_cargo_toml(new_file_content: String) -> io::Result<()> {
     fs::write("./Cargo.toml", new_file_content)?;
     Ok(())
 }
@@ -66,20 +70,25 @@ fn run_build() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn git_add() {
+fn git_add() -> io::Result<()> {
     let _ = Command::new("git")
         .args(["add", "Cargo.toml", "Cargo.lock"])
-        .output();
+        .output()?;
+    Ok(())
 }
 
-fn git_commit(version: &str) {
+fn git_commit(version: &str) -> io::Result<()> {
     let version = &format!("'v{version}'");
-    let _ = Command::new("git").args(["commit", "-m", version]).output();
+    let _ = Command::new("git")
+        .args(["commit", "-m", version])
+        .output()?;
+    Ok(())
 }
-fn git_tag(version: &str) {
+fn git_tag(version: &str) -> io::Result<()> {
     let version = &format!("v{version}");
     let commit_message = &format!("'v{version}'");
     let _ = Command::new("git")
         .args(["tag", "-a", version, "-m", commit_message])
         .output();
+    Ok(())
 }
