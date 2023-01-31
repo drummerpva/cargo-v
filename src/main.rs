@@ -18,10 +18,28 @@ fn main() {
     };
 
     let (new_file_content, new_version) = match version.as_str().trim() {
-        "patch" => update_version_by_label(file_content, VersionLabel::Patch),
-        "minor" => update_version_by_label(file_content, VersionLabel::Minor),
-        "major" => update_version_by_label(file_content, VersionLabel::Major),
-        _ => update_version(file_content, String::from(version.trim())),
+        "patch" => {
+            update_version_by_label(file_content, VersionLabel::Patch).unwrap_or_else(|error| {
+                handle_error(error.to_string());
+                return ("".into(), "".into());
+            })
+        }
+        "minor" => {
+            update_version_by_label(file_content, VersionLabel::Minor).unwrap_or_else(|error| {
+                handle_error(error.to_string());
+                return ("".into(), "".into());
+            })
+        }
+        "major" => {
+            update_version_by_label(file_content, VersionLabel::Major).unwrap_or_else(|error| {
+                handle_error(error.to_string());
+                return ("".into(), "".into());
+            })
+        }
+        _ => update_version(file_content, String::from(version.trim())).unwrap_or_else(|error| {
+            handle_error(error.to_string());
+            return ("".into(), "".into());
+        }),
     };
     if save_new_version_in_cargo_toml(new_file_content).is_err() {
         println!("Erro on Save new content att Cargo.toml");
@@ -35,6 +53,11 @@ fn main() {
     git_commit(&new_version);
     git_tag(&new_version);
     process::exit(0);
+}
+
+fn handle_error(error: String) {
+    eprintln!("{error}");
+    process::exit(1);
 }
 fn save_new_version_in_cargo_toml(new_file_content: String) -> Result<(), Box<dyn Error>> {
     fs::write("./Cargo.toml", new_file_content)?;
