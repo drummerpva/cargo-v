@@ -54,7 +54,7 @@ fn main() {
 }
 
 fn handle_error(error: String) {
-    eprintln!("{error}");
+    eprintln!("ERROR: {error}");
     process::exit(1);
 }
 fn save_new_version_in_cargo_toml(new_file_content: String) -> Result<(), Box<dyn Error>> {
