@@ -119,10 +119,10 @@ mod test {
         let input = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.1\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
         let expected = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.2\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
         let version_expected = String::from("0.0.2");
-        match update_version(input, version_expected.clone()) {
-            Ok(result) => assert_eq!(result, (expected, version_expected)),
-            Err(_) => assert!(false),
-        };
+        assert_eq!(
+            update_version(input, version_expected.clone()).unwrap(),
+            (expected, version_expected)
+        );
     }
 
     #[test]
@@ -130,30 +130,30 @@ mod test {
         let input = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.1\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
         let expected = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.2\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
         let version_expected = String::from("0.0.2");
-        match update_version_by_label(input, VersionLabel::Patch) {
-            Ok(result) => assert_eq!(result, (expected, version_expected)),
-            Err(_) => assert!(false),
-        };
+        assert_eq!(
+            update_version_by_label(input, VersionLabel::Patch).unwrap(),
+            (expected, version_expected)
+        );
     }
     #[test]
     fn should_update_project_version_minor() {
         let input = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.1\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
         let expected = String::from("[package]\n name = \"cargo-v\"\n version = \"0.1.0\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
         let version_expected = String::from("0.1.0");
-        match update_version_by_label(input, VersionLabel::Minor) {
-            Ok(result) => assert_eq!(result, (expected, version_expected)),
-            Err(_) => assert!(false),
-        };
+        assert_eq!(
+            update_version_by_label(input, VersionLabel::Minor).unwrap(),
+            (expected, version_expected)
+        )
     }
     #[test]
     fn should_update_project_version_major() {
         let input = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.1\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
         let expected = String::from("[package]\n name = \"cargo-v\"\n version = \"1.0.0\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
         let version_expected = String::from("1.0.0");
-        match update_version_by_label(input, VersionLabel::Major) {
-            Ok(result) => assert_eq!(result, (expected, version_expected)),
-            Err(_) => assert!(false),
-        };
+        assert_eq!(
+            update_version_by_label(input, VersionLabel::Major).unwrap(),
+            (expected, version_expected)
+        )
     }
 
     #[test]
@@ -203,9 +203,9 @@ mod test {
         let input = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.1\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
         let expected = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.2\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
         let version_expected = String::from("0.0.2");
-        match update_version(input, "v0.0.2".into()) {
-            Ok(result) => assert_eq!(result, (expected, version_expected)),
-            Err(_) => assert!(false),
-        };
+        assert_eq!(
+            update_version(input, "v0.0.2".into()).unwrap(),
+            (expected, version_expected)
+        )
     }
 }
