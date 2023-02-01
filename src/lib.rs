@@ -1,4 +1,4 @@
-use std::error::Error;
+use std::{error::Error, fs};
 
 pub enum VersionLabel {
     Patch,
@@ -112,6 +112,15 @@ fn get_version_as_tuple(version: &str) -> (&str, &str, &str) {
 fn increment_version(single_version: &str) -> usize {
     single_version.parse::<usize>().unwrap() + 1
 }
+
+pub fn read_file(file_name: &str) -> Result<String, Box<dyn Error>> {
+    let file = fs::read_to_string(file_name);
+    match file {
+        Ok(data) => Ok(data),
+        Err(err) => Err(err)?,
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -242,6 +251,22 @@ mod test {
             Ok(_) => assert!(false),
             Err(error) => assert_eq!(error.to_string(), "invalid digit found in string"),
         };
+    }
+
+    #[test]
+    fn should_return_data_content_from_file() {
+        let input = "./exemplo.toml";
+        let expected = String::from("[package]\nname = \"cargo-v\"\nversion = \"0.2.24\"\nedition = \"2021\"\n\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n\n[dependencies]\n");
+
+        assert_eq!(expected, read_file(input).unwrap());
+    }
+    #[test]
+    fn should_return_error_on_file_not_found() {
+        let input = "./file_inexistent.toml";
+        match read_file(input) {
+            Ok(_) => assert!(false),
+            Err(error) => assert!(error.to_string().contains("No such file or directory")),
+        }
     }
 
     #[test]

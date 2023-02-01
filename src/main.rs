@@ -1,4 +1,4 @@
-use cargo_v::{update_version, update_version_by_label, VersionLabel};
+use cargo_v::{read_file, update_version, update_version_by_label, VersionLabel};
 use std::{
     env,
     error::Error,
@@ -11,8 +11,7 @@ fn main() {
         Some(v) => v,
         None => handle_error(String::from("Version not provided! You must pass the version(patch, minor, major or specific version v1.0.0 by Example)")),
     };
-    let file = fs::read_to_string("./Cargo.toml");
-    let file_content = match file {
+    let file_content = match read_file("./Cargo.toml") {
         Ok(data) => data,
         Err(err) => handle_error(format!("Can not load file: {err}")),
     };
