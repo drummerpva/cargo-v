@@ -256,6 +256,30 @@ mod test {
             Err(error) => assert_eq!(error.to_string(), "invalid digit found in string"),
         };
     }
+    #[test]
+    fn should_throw_on_version_non_numeric_patch_provided_() {
+        let input = String::from("[package]\n name = \"cargo-v\"\n version = \"2.0.2\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
+        match update_version(input, "2.0.a".into()) {
+            Ok(_) => assert!(false),
+            Err(error) => assert_eq!(error.to_string(), "invalid digit found in string"),
+        };
+    }
+    #[test]
+    fn should_throw_on_version_non_numeric_minor_provided_() {
+        let input = String::from("[package]\n name = \"cargo-v\"\n version = \"2.0.2\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
+        match update_version(input, "2.a.0".into()) {
+            Ok(_) => assert!(false),
+            Err(error) => assert_eq!(error.to_string(), "invalid digit found in string"),
+        };
+    }
+    #[test]
+    fn should_throw_on_version_non_numeric_major_provided_() {
+        let input = String::from("[package]\n name = \"cargo-v\"\n version = \"2.0.2\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
+        match update_version(input, "a.0.0".into()) {
+            Ok(_) => assert!(false),
+            Err(error) => assert_eq!(error.to_string(), "invalid digit found in string"),
+        };
+    }
 
     #[test]
     fn should_return_data_content_from_file() {
