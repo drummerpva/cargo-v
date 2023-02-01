@@ -10,7 +10,8 @@ pub fn update_version_by_label(
     cargo_toml_content: String,
     version: VersionLabel,
 ) -> Result<(String, String), Box<dyn Error>> {
-    let old_version = get_version(&cargo_toml_content).unwrap();
+    let old_version =
+        get_prop_from_cargo_toml(&cargo_toml_content, "[package]", "version").unwrap();
     let (major, minor, patch) = get_version_as_tuple(&old_version);
     update_version(
         cargo_toml_content.clone(),
@@ -31,7 +32,8 @@ pub fn update_version(
     version: String,
 ) -> Result<(String, String), Box<dyn Error>> {
     let version = version.replace('v', "");
-    let old_version = get_version(&cargo_toml_content).unwrap();
+    let old_version =
+        get_prop_from_cargo_toml(&cargo_toml_content, "[package]", "version").unwrap();
     verify_new_version_is_grather(&old_version, &version)?;
     Ok((cargo_toml_content.replace(&old_version, &version), version))
 }
@@ -74,16 +76,20 @@ fn verify_new_version_is_grather(
     return Ok(());
 }
 
-fn get_version(cargo_toml_content: &str) -> Result<String, Box<dyn Error>> {
+fn get_prop_from_cargo_toml(
+    cargo_toml_content: &str,
+    sector: &str,
+    prop: &str,
+) -> Result<String, Box<dyn Error>> {
     let lines: Vec<&str> = cargo_toml_content.lines().collect();
     let mut should_copy = false;
 
     for line in lines {
         if line.starts_with("[") {
-            should_copy = line.starts_with("[package]");
+            should_copy = line.starts_with(sector);
         }
         if should_copy {
-            if line.contains("version") {
+            if line.contains(prop) {
                 let return_value = line
                     .split('=')
                     .last()
@@ -111,13 +117,13 @@ mod test {
     #[test]
     fn should_get_version() {
         let input = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.1\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
-        let version = get_version(&input).unwrap();
+        let version = get_prop_from_cargo_toml(&input, "[package]", "version").unwrap();
         assert_eq!(version, String::from("0.0.1"));
     }
     #[test]
     fn should_get_version_tuple() {
         let input = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.1\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
-        let version_string = get_version(&input).unwrap();
+        let version_string = get_prop_from_cargo_toml(&input, "[package]", "version").unwrap();
         let version = get_version_as_tuple(&version_string);
         assert_eq!(version, ("0", "0", "1"));
     }
