@@ -89,8 +89,8 @@ fn get_prop_from_cargo_toml(
             should_copy = line.starts_with(sector);
         }
         if should_copy && line.contains(prop) {
-            let return_value = get_value_from_toml_line(line);
-            return Ok(return_value);
+            let toml_value = get_value_from_toml_line(line);
+            return Ok(toml_value);
         }
     }
     Err(format!(
