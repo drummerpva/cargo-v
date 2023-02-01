@@ -1,8 +1,10 @@
-use cargo_v::{read_file, update_version, update_version_by_label, VersionLabel};
+use cargo_v::{
+    read_file, save_data_in_file, update_version, update_version_by_label, VersionLabel,
+};
 use std::{
     env,
     error::Error,
-    fs, io,
+    io,
     process::{self, Command},
 };
 fn main() {
@@ -11,7 +13,8 @@ fn main() {
         Some(v) => v,
         None => handle_error(String::from("Version not provided! You must pass the version(patch, minor, major or specific version v1.0.0 by Example)")),
     };
-    let file_content = match read_file("./Cargo.toml") {
+    let file_name = "./Cargo.toml";
+    let file_content = match read_file(file_name) {
         Ok(data) => data,
         Err(err) => handle_error(format!("Can not load file: {err}")),
     };
@@ -36,8 +39,8 @@ fn main() {
             handle_error(error.to_string());
         }),
     };
-    if let Err(error) = save_new_version_in_cargo_toml(new_file_content) {
-        handle_error(format!("Erro on Save new content at Cargo.toml: {error}"));
+    if let Err(error) = save_data_in_file(new_file_content, file_name) {
+        handle_error(format!("Erro on Save new content at {file_name}: {error}"));
     }
     if let Err(error) = run_build() {
         handle_error(format!("Error on build: {}", error));
@@ -57,10 +60,6 @@ fn main() {
 fn handle_error(error: String) -> ! {
     eprintln!("ERROR: {error}");
     process::exit(1);
-}
-fn save_new_version_in_cargo_toml(new_file_content: String) -> io::Result<()> {
-    fs::write("./Cargo.toml", new_file_content)?;
-    Ok(())
 }
 fn run_build() -> Result<(), Box<dyn Error>> {
     let _ = Command::new("cargo")

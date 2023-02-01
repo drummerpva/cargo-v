@@ -1,4 +1,4 @@
-use std::{error::Error, fs};
+use std::{error::Error, fs, io};
 
 pub enum VersionLabel {
     Patch,
@@ -121,6 +121,10 @@ pub fn read_file(file_name: &str) -> Result<String, Box<dyn Error>> {
     }
 }
 
+pub fn save_data_in_file(new_file_content: String, file_name: &str) -> io::Result<()> {
+    fs::write(file_name, new_file_content)?;
+    Ok(())
+}
 #[cfg(test)]
 mod test {
     use super::*;
@@ -267,6 +271,15 @@ mod test {
             Ok(_) => assert!(false),
             Err(error) => assert!(error.to_string().contains("No such file or directory")),
         }
+    }
+
+    #[test]
+    fn should_save_file_content_correctly() {
+        let input = String::from("[package]\nname = \"cargo-v\"\nversion = \"0.2.24\"\nedition = \"2021\"\n\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n\n[dependencies]\n");
+        let expected = String::from("[package]\nname = \"cargo-v\"\nversion = \"0.2.24\"\nedition = \"2021\"\n\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n\n[dependencies]\n");
+        let file_name = "./teste_write.toml";
+        let _ = save_data_in_file(input, file_name);
+        assert_eq!(expected, read_file(file_name).unwrap());
     }
 
     #[test]
