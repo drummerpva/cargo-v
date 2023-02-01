@@ -101,7 +101,9 @@ fn get_prop_from_cargo_toml(
             }
         }
     }
-    Err("Version not found in Cargo.toml")?
+    Err(format!(
+        "{prop} not found in  sector({sector}) at Cargo.toml"
+    ))?
 }
 fn get_version_as_tuple(version: &str) -> (&str, &str, &str) {
     let vec: Vec<&str> = version.split('.').collect();
