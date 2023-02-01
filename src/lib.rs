@@ -173,6 +173,25 @@ mod test {
     }
 
     #[test]
+    fn should_return_version_from_package_sector_at_toml_file() {
+        let input = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.1\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
+        let expected = String::from("0.0.1");
+        assert_eq!(
+            get_prop_from_cargo_toml(&input, "[package]", "version").unwrap(),
+            expected
+        )
+    }
+    #[test]
+    fn should_return_prop_from_correct_sector_at_toml_file() {
+        let input = String::from("[package]\n name = \"any-name\"\n version = \"0.0.1\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
+        let expected = String::from("any-name");
+        assert_eq!(
+            get_prop_from_cargo_toml(&input, "[package]", "name").unwrap(),
+            expected
+        )
+    }
+
+    #[test]
     fn should_throw_on_version_patch_passed_lower_than_current() {
         let input = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.2\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
         match update_version(input, "0.0.1".into()) {
