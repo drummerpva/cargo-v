@@ -224,4 +224,12 @@ mod test {
             (expected, version_expected)
         )
     }
+
+    #[test]
+    fn should_return_value_from_toml_line() {
+        let input = String::from("any_key = \"any_value\"");
+        let expected = String::from("any_value");
+
+        assert_eq!(expected, get_value_from_toml_line(&input));
+    }
 }
