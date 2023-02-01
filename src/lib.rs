@@ -14,7 +14,7 @@ pub fn update_version_by_label(
         get_prop_from_cargo_toml(&cargo_toml_content, "[package]", "version").unwrap();
     let (major, minor, patch) = get_version_as_tuple(&old_version);
     update_version(
-        cargo_toml_content.clone(),
+        cargo_toml_content,
         match version {
             VersionLabel::Patch => {
                 format!("{major}.{minor}.{}", increment_version(patch))
@@ -73,7 +73,7 @@ fn verify_new_version_is_grather(
     if new_patch == old_patch {
         return Err("You can not set a version lower than the current version")?;
     }
-    return Ok(());
+    Ok(())
 }
 
 fn get_prop_from_cargo_toml(
@@ -85,20 +85,18 @@ fn get_prop_from_cargo_toml(
     let mut should_copy = false;
 
     for line in lines {
-        if line.starts_with("[") {
+        if line.starts_with('[') {
             should_copy = line.starts_with(sector);
         }
-        if should_copy {
-            if line.contains(prop) {
-                let return_value = line
-                    .split('=')
-                    .last()
-                    .unwrap()
-                    .replace('\"', "")
-                    .trim()
-                    .to_string();
-                return Ok(return_value);
-            }
+        if should_copy && line.contains(prop) {
+            let return_value = line
+                .split('=')
+                .last()
+                .unwrap()
+                .replace('\"', "")
+                .trim()
+                .to_string();
+            return Ok(return_value);
         }
     }
     Err(format!(
