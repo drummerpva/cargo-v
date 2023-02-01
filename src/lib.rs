@@ -89,19 +89,21 @@ fn get_prop_from_cargo_toml(
             should_copy = line.starts_with(sector);
         }
         if should_copy && line.contains(prop) {
-            let return_value = line
-                .split('=')
-                .last()
-                .unwrap()
-                .replace('\"', "")
-                .trim()
-                .to_string();
+            let return_value = get_value_from_toml_line(line);
             return Ok(return_value);
         }
     }
     Err(format!(
         "{prop} not found in  sector({sector}) at Cargo.toml"
     ))?
+}
+fn get_value_from_toml_line(line: &str) -> String {
+    line.split('=')
+        .last()
+        .unwrap()
+        .replace('\"', "")
+        .trim()
+        .to_string()
 }
 fn get_version_as_tuple(version: &str) -> (&str, &str, &str) {
     let vec: Vec<&str> = version.split('.').collect();
