@@ -1,4 +1,4 @@
-use std::{error::Error, process};
+use std::error::Error;
 
 pub enum VersionLabel {
     Patch,
@@ -10,10 +10,10 @@ pub fn update_version_by_label(
     cargo_toml_content: String,
     version: VersionLabel,
 ) -> Result<(String, String), Box<dyn Error>> {
-    let old_version = get_version(&cargo_toml_content);
+    let old_version = get_version(&cargo_toml_content).unwrap();
     let (major, minor, patch) = get_version_as_tuple(&old_version);
     update_version(
-        cargo_toml_content,
+        cargo_toml_content.clone(),
         match version {
             VersionLabel::Patch => {
                 format!("{major}.{minor}.{}", increment_version(patch))
@@ -31,7 +31,7 @@ pub fn update_version(
     version: String,
 ) -> Result<(String, String), Box<dyn Error>> {
     let version = version.replace('v', "");
-    let old_version = get_version(&cargo_toml_content);
+    let old_version = get_version(&cargo_toml_content).unwrap();
     verify_new_version_is_grather(&old_version, &version)?;
     Ok((cargo_toml_content.replace(&old_version, &version), version))
 }
@@ -74,20 +74,28 @@ fn verify_new_version_is_grather(
     return Ok(());
 }
 
-fn get_version(cargo_toml_content: &str) -> String {
-    cargo_toml_content
-        .lines()
-        .find(|line| line.contains("version"))
-        .unwrap_or_else(|| {
-            eprintln!("Cargo.toml don't have a version tag");
-            process::exit(1);
-        })
-        .split('=')
-        .last()
-        .unwrap()
-        .replace('\"', "")
-        .trim()
-        .to_string()
+fn get_version(cargo_toml_content: &str) -> Result<String, Box<dyn Error>> {
+    let lines: Vec<&str> = cargo_toml_content.lines().collect();
+    let mut should_copy = false;
+
+    for line in lines {
+        if line.starts_with("[") {
+            should_copy = line.starts_with("[package]");
+        }
+        if should_copy {
+            if line.contains("version") {
+                let return_value = line
+                    .split('=')
+                    .last()
+                    .unwrap()
+                    .replace('\"', "")
+                    .trim()
+                    .to_string();
+                return Ok(return_value);
+            }
+        }
+    }
+    Err("Version not found in Cargo.toml")?
 }
 fn get_version_as_tuple(version: &str) -> (&str, &str, &str) {
     let vec: Vec<&str> = version.split('.').collect();
@@ -103,13 +111,13 @@ mod test {
     #[test]
     fn should_get_version() {
         let input = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.1\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
-        let version = get_version(&input);
+        let version = get_version(&input).unwrap();
         assert_eq!(version, String::from("0.0.1"));
     }
     #[test]
     fn should_get_version_tuple() {
         let input = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.1\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
-        let version_string = get_version(&input);
+        let version_string = get_version(&input).unwrap();
         let version = get_version_as_tuple(&version_string);
         assert_eq!(version, ("0", "0", "1"));
     }
