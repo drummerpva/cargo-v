@@ -71,7 +71,7 @@ fn verify_new_version_is_grather(
         return Err("You can not set a version lower than the current version")?;
     }
     if new_patch == old_patch {
-        return Err("You can not set a version lower than the current version")?;
+        return Err("You can not set a version equal to current version")?;
     }
     Ok(())
 }
@@ -173,7 +173,7 @@ mod test {
     }
 
     #[test]
-    fn should_panic_on_version_patch_passed_lower_than_current() {
+    fn should_throw_on_version_patch_passed_lower_than_current() {
         let input = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.2\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
         match update_version(input, "0.0.1".into()) {
             Ok(_) => assert!(false),
@@ -184,7 +184,7 @@ mod test {
         };
     }
     #[test]
-    fn should_panic_on_version_minor_passed_lower_than_current() {
+    fn should_throw_on_version_minor_passed_lower_than_current() {
         let input = String::from("[package]\n name = \"cargo-v\"\n version = \"0.2.2\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
         match update_version(input, "0.1.0".into()) {
             Ok(_) => assert!(false),
@@ -195,7 +195,7 @@ mod test {
         };
     }
     #[test]
-    fn should_panic_on_version_major_passed_lower_than_current() {
+    fn should_throw_on_version_major_passed_lower_than_current() {
         let input = String::from("[package]\n name = \"cargo-v\"\n version = \"2.0.2\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
         match update_version(input, "1.0.0".into()) {
             Ok(_) => assert!(false),
@@ -206,7 +206,18 @@ mod test {
         };
     }
     #[test]
-    fn should_panic_on_version_passed_had_negative_number() {
+    fn should_throw_on_old_version_equal_to_current_version() {
+        let input = String::from("[package]\n name = \"cargo-v\"\n version = \"2.0.2\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
+        match update_version(input, "2.0.2".into()) {
+            Ok(_) => assert!(false),
+            Err(error) => assert_eq!(
+                error.to_string(),
+                "You can not set a version equal to current version"
+            ),
+        };
+    }
+    #[test]
+    fn should_throw_on_version_passed_had_negative_number() {
         let input = String::from("[package]\n name = \"cargo-v\"\n version = \"2.0.2\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
         match update_version(input, "-2.1.0".into()) {
             Ok(_) => assert!(false),
