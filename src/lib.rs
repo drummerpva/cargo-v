@@ -1,4 +1,4 @@
-use std::{error::Error, fs, io};
+use std::{error::Error, fs, io, vec::IntoIter};
 
 pub enum VersionLabel {
     Patch,
@@ -125,10 +125,35 @@ pub fn save_data_in_file(new_file_content: String, file_name: &str) -> io::Resul
     fs::write(file_name, new_file_content)?;
     Ok(())
 }
+
+pub fn get_version_from_args_list(args: IntoIter<String>) -> Result<String, Box<dyn Error>> {
+    let mut args = args.skip(2);
+    match args.next() {
+        Some(version) => Ok(version),
+        None => Err("Version not provided! You must pass the version(patch, minor, major or specific version v1.0.0 by Example)")?,
+    }
+}
+
 #[cfg(test)]
 mod test {
-    use super::*;
+    use std::vec::IntoIter;
 
+    use super::*;
+    #[test]
+    fn ensure_return_version_info_from_args() {
+        let input: IntoIter<String> =
+            vec![String::from("A"), String::from("B"), String::from("C")].into_iter();
+        let expected = String::from("C");
+        assert_eq!(expected, get_version_from_args_list(input).unwrap());
+    }
+    #[test]
+    fn ensure_throw_on_version_not_provided() {
+        let input: IntoIter<String> = vec![String::from("A"), String::from("B")].into_iter();
+        match get_version_from_args_list(input) {
+            Ok(_) => assert!(false),
+            Err(err) => assert_eq!(err.to_string(),"Version not provided! You must pass the version(patch, minor, major or specific version v1.0.0 by Example)" ),
+        }
+    }
     #[test]
     fn should_get_version() {
         let input = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.1\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
@@ -142,7 +167,6 @@ mod test {
         let version = get_version_as_tuple(&version_string);
         assert_eq!(version, ("0", "0", "1"));
     }
-
     #[test]
     fn should_update_project_version_by_hand() {
         let input = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.1\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
@@ -153,7 +177,6 @@ mod test {
             (expected, version_expected)
         );
     }
-
     #[test]
     fn should_update_project_version_patch() {
         let input = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.1\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
@@ -184,7 +207,6 @@ mod test {
             (expected, version_expected)
         )
     }
-
     #[test]
     fn should_return_version_from_package_sector_at_toml_file() {
         let input = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.1\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
@@ -203,7 +225,6 @@ mod test {
             expected
         )
     }
-
     #[test]
     fn should_throw_on_version_patch_passed_lower_than_current() {
         let input = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.2\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
@@ -280,7 +301,6 @@ mod test {
             Err(error) => assert_eq!(error.to_string(), "invalid digit found in string"),
         };
     }
-
     #[test]
     fn should_return_data_content_from_file() {
         let input = "./exemplo.toml";
@@ -296,7 +316,6 @@ mod test {
             Err(error) => assert!(error.to_string().contains("No such file or directory")),
         }
     }
-
     #[test]
     fn should_save_file_content_correctly() {
         let input = String::from("[package]\nname = \"cargo-v\"\nversion = \"0.2.24\"\nedition = \"2021\"\n\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n\n[dependencies]\n");
@@ -305,7 +324,6 @@ mod test {
         let _ = save_data_in_file(input, file_name);
         assert_eq!(expected, read_file(file_name).unwrap());
     }
-
     #[test]
     fn should_acept_v_prefix() {
         let input = String::from("[package]\n name = \"cargo-v\"\n version = \"0.0.1\"\n edition = \"2021\"\n# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html\n[dependencies]\n");
@@ -316,7 +334,6 @@ mod test {
             (expected, version_expected)
         )
     }
-
     #[test]
     fn should_return_value_from_toml_line() {
         let input = String::from("any_key = \"any_value\"");
