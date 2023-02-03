@@ -1,5 +1,6 @@
 use cargo_v::{
-    read_file, save_data_in_file, update_version, update_version_by_label, VersionLabel,
+    get_version_from_args_list, read_file, save_data_in_file, update_version,
+    update_version_by_label, VersionLabel,
 };
 use std::{
     env,
@@ -8,10 +9,10 @@ use std::{
     process::{self, Command},
 };
 fn main() {
-    let mut args = env::args().skip(2);
-    let version = match args.next() {
-        Some(v) => v,
-        None => handle_error(String::from("Version not provided! You must pass the version(patch, minor, major or specific version v1.0.0 by Example)")),
+    let args = env::args();
+    let version = match get_version_from_args_list(args) {
+        Ok(v) => v,
+        Err(err) => handle_error(err.to_string()),
     };
     let file_name = "./Cargo.toml";
     let file_content = match read_file(file_name) {

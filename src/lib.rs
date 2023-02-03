@@ -1,4 +1,4 @@
-use std::{error::Error, fs, io, vec::IntoIter};
+use std::{error::Error, fs, io};
 
 pub enum VersionLabel {
     Patch,
@@ -126,7 +126,9 @@ pub fn save_data_in_file(new_file_content: String, file_name: &str) -> io::Resul
     Ok(())
 }
 
-pub fn get_version_from_args_list(args: IntoIter<String>) -> Result<String, Box<dyn Error>> {
+pub fn get_version_from_args_list(
+    args: impl Iterator<Item = String>,
+) -> Result<String, Box<dyn Error>> {
     let mut args = args.skip(2);
     match args.next() {
         Some(version) => Ok(version),
