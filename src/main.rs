@@ -1,6 +1,6 @@
 use cargo_v::{
     get_version_from_args_list, read_file, save_data_in_file, update_version,
-    update_version_by_label, VersionLabel,
+    update_version_by_label, Operation, VersionLabel,
 };
 use std::{
     env,
@@ -8,9 +8,9 @@ use std::{
     io,
     process::{self, Command},
 };
+
 fn main() {
-    let args = env::args();
-    let version = match get_version_from_args_list(args) {
+    let version = match get_version_from_args_list(env::args()) {
         Ok(v) => v,
         Err(err) => handle_error(err.to_string()),
     };
@@ -19,26 +19,24 @@ fn main() {
         Ok(data) => data,
         Err(err) => handle_error(format!("Can not load file: {err}")),
     };
-
-    let (new_file_content, new_version) = match version.as_str().trim() {
-        "patch" => {
-            update_version_by_label(file_content, VersionLabel::Patch).unwrap_or_else(|error| {
+    let operation = Operation::from(&version);
+    let (new_file_content, new_version) = match operation {
+        Operation::Patch => update_version_by_label(file_content, VersionLabel::Patch)
+            .unwrap_or_else(|error| {
                 handle_error(error.to_string());
-            })
-        }
-        "minor" => {
-            update_version_by_label(file_content, VersionLabel::Minor).unwrap_or_else(|error| {
+            }),
+        Operation::Minor => update_version_by_label(file_content, VersionLabel::Minor)
+            .unwrap_or_else(|error| {
                 handle_error(error.to_string());
-            })
-        }
-        "major" => {
-            update_version_by_label(file_content, VersionLabel::Major).unwrap_or_else(|error| {
+            }),
+        Operation::Major => update_version_by_label(file_content, VersionLabel::Major)
+            .unwrap_or_else(|error| {
                 handle_error(error.to_string());
-            })
-        }
-        _ => update_version(file_content, String::from(version.trim())).unwrap_or_else(|error| {
-            handle_error(error.to_string());
-        }),
+            }),
+        Operation::Version(new_version) => update_version(file_content, new_version)
+            .unwrap_or_else(|error| {
+                handle_error(error.to_string());
+            }),
     };
     if let Err(error) = save_data_in_file(new_file_content, file_name) {
         handle_error(format!("Erro on Save new content at {file_name}: {error}"));

@@ -135,7 +135,22 @@ pub fn get_version_from_args_list(
         None => Err("Version not provided! You must pass the version(patch, minor, major or specific version v1.0.0 by Example)")?,
     }
 }
-
+pub enum Operation {
+    Patch,
+    Major,
+    Minor,
+    Version(String),
+}
+impl Operation {
+    pub fn from(version: &str) -> Self {
+        match version {
+            "patch" => Self::Patch,
+            "minor" => Self::Minor,
+            "major" => Self::Major,
+            _ => Self::Version(String::from(version.trim())),
+        }
+    }
+}
 #[cfg(test)]
 mod test {
     use std::vec::IntoIter;
